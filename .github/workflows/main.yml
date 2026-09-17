@@ -1,0 +1,42 @@
+# example workflow for Black Duck SCA scans using the Black Duck Security Scan Action
+# https://github.com/marketplace/actions/black-duck-security-scan
+name: bd-ss-action
+on:
+  push:
+    branches: [ main, master, develop, stage, release ]
+  pull_request:
+    branches: [ main, master, develop, stage, release ]
+  workflow_dispatch:
+jobs:
+  blackduck:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+          - name: Use Node.js        
+            uses: actions/setup-node@v7        
+            with:          
+              node-version: '20.x'     
+          - run: npm build
+   # - name: Setup Java JDK
+    #  uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+   #   with:
+    #    java-version: 25
+   #     distribution: temurin
+   #     cache: maven
+   # - name: Maven Build
+   #   run: mvn -B -DskipTests package
+    - name: Black Duck SCA Scan
+      uses: blackduck-inc/black-duck-security-scan@152247222aa9cd38124acd5c0cf60f4db71adc3f # v2.11.0
+      env:
+        DETECT_PROJECT_NAME: ${{ github.event.repository.name }}
+      with:
+        blackducksca_url: ${{ vars.BLACKDUCK_URL }}
+        blackducksca_token: ${{ secrets.BLACKDUCK_API_TOKEN }}
+        blackducksca_scan_failure_severities: BLOCKER
+        blackducksca_fixpr_enabled: true
+        blackducksca_prComment_enabled: true
+        blackducksca_reports_sarif_create: true
+        blackducksca_upload_sarif_report: true
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        include_diagnostics: false
